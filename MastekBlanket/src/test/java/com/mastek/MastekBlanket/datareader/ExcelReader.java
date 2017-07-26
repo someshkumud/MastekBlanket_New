@@ -63,6 +63,42 @@ public class ExcelReader {
 		
 	}
 	
+	
+	public int getRowCount(String sheet) {
+		try {
+		int index=workbook.getSheetIndex(sheet);
+		if(index==-1) {
+			return 0;	
+		}
+		else {
+			worksheet=workbook.getSheetAt(index);
+			int number=worksheet.getLastRowNum()+1;
+			return number;	
+		}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+	
+	public int getColCount(String sheet) {
+		try {
+		int index=workbook.getSheetIndex(sheet);
+		if(index==-1) {
+			return 0;	
+		}
+		else {
+			worksheet=workbook.getSheetAt(index);
+			row=worksheet.getRow(0);
+			return row.getLastCellNum();	
+		}
+
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+	
 	public static void main(String[] args) {
 		String path=System.getProperty("user.dir")+"\\src\\test\\resources\\testdata\\Login.xlsx";
 		ExcelReader obj=new ExcelReader(path);
