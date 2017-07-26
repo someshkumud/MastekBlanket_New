@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite guice-stage="DEVELOPMENT" name="Failed suite [Regression Suit]">
+  <listeners>
+    <listener class-name="com.mastek.MastekBlanket.customlistener.Listener"/>
+  </listeners>
+  <test name="Test">
+    <classes>
+      <class name="com.mastek.MastekBlanket.testscripts.TC001_Login"/>
+    </classes>
+  </test> <!-- Test -->
+</suite> <!-- Failed suite [Regression Suit] -->
