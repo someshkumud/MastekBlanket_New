@@ -1,9 +1,13 @@
 package com.mastek.MastekBlanket.datareader;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -11,99 +15,100 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 
 public class ExcelReader {
-	public String path;
-	FileInputStream fInput;
-	XSSFWorkbook workbook;
-	XSSFSheet worksheet;
-	XSSFRow row;
-	XSSFCell cell;
+	public FileInputStream fis;
+	public FileOutputStream fos;
+	public XSSFWorkbook workbook;
+	public XSSFSheet worksheet;
+	public XSSFRow row;
+	public XSSFCell cell;
+	public String xlFilePath;
 	
-	public ExcelReader(String path) {
-		this.path=path;
+
+	public ExcelReader(String xlFilePath) throws Exception {
+		this.xlFilePath=xlFilePath;
+		fis=new FileInputStream(xlFilePath);
+		workbook=new XSSFWorkbook(fis);
+		fis.close();
+	}
+
+	
+
+	public String getCellData(String sheetName,String colName, int rowNum) {	
 		
 		try {
-			fInput=new FileInputStream(path);
-			workbook=new XSSFWorkbook(fInput);
+			int col_Num = -1;
+			worksheet=workbook.getSheet(sheetName);
+			row=worksheet.getRow(0);
 			
-			
+			for(int rowCount = 0;rowCount<row.getLastCellNum();rowCount++){
+				if(row.getCell(rowCount).getStringCellValue().trim().equals(colName.trim())){
+					col_Num=rowCount;
+				}
+			}
+			row=worksheet.getRow(rowNum-1);
+			cell = row.getCell(col_Num);			
+			if(cell.getCellTypeEnum()==CellType.STRING){
+				return cell.getStringCellValue();
+			}else if(cell.getCellTypeEnum()==CellType.NUMERIC||cell.getCellTypeEnum()==CellType.FORMULA){
+				String cellValue=String.valueOf(cell.getNumericCellValue());
+				if(HSSFDateUtil.isCellDateFormatted(cell)){
+					DateFormat df=new SimpleDateFormat("dd/MM/yy");
+					Date date=cell.getDateCellValue();
+					cellValue=df.format(date);
+				}
+				return cellValue;
+			}else if(cell.getCellTypeEnum()==CellType.BLANK){
+				return "";
+			}else
+				return String.valueOf(cell.getBooleanCellValue());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return "Row "+rowNum+" OR Colomn "+colName+" does not exist in Excel";
 		}
+	}
 		
+	
+	
+	
+	public String getCellData(String sheetName,int colNum, int rowNum) {
+		
+		try {
+			worksheet=workbook.getSheet(sheetName);
+			row=worksheet.getRow(rowNum);
+			cell = row.getCell(colNum);			
+			if(cell.getCellTypeEnum()==CellType.STRING){
+				return cell.getStringCellValue();
+			}else if(cell.getCellTypeEnum()==CellType.NUMERIC||cell.getCellTypeEnum()==CellType.FORMULA){
+				String cellValue=String.valueOf(cell.getNumericCellValue());
+				if(HSSFDateUtil.isCellDateFormatted(cell)){
+					DateFormat df=new SimpleDateFormat("dd/MM/yy");
+					Date date=cell.getDateCellValue();
+					cellValue=df.format(date);
+				}
+				return cellValue;
+			}else if(cell.getCellTypeEnum()==CellType.BLANK){
+				return "";
+			}else
+				return String.valueOf(cell.getBooleanCellValue());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Row "+rowNum+" OR Colomn "+colNum+" does not exist in Excel";
+		}
 		
 	}
 
-	public String getCellData(String sheet,String colName, int rowNum) {
 		
-		int col_Num=0;
-		int index = workbook.getSheetIndex(sheet);
-		worksheet=workbook.getSheetAt(index);
-		
-		row=worksheet.getRow(0);
-		
-		for(int rowCount = 0;rowCount<row.getLastCellNum();rowCount++){
-			if(row.getCell(rowCount).getStringCellValue().equalsIgnoreCase(colName)){
-				col_Num=rowCount;
-			}
-		}
-		row=worksheet.getRow(rowNum-1);
-		cell = row.getCell(col_Num);
-		if(cell.getCellType()==Cell.CELL_TYPE_STRING){
-			return cell.getStringCellValue();
-		}else if(cell.getCellType()==Cell.CELL_TYPE_NUMERIC){
-			return String.valueOf(cell.getNumericCellValue());
-		}else if(cell.getCellType()==Cell.CELL_TYPE_BOOLEAN){
-			return String.valueOf(cell.getBooleanCellValue());
-		}else if(cell.getCellType()==Cell.CELL_TYPE_BLANK){
-			return "";
-		}
-		
-		return null;
-		
-	}
-	
-	
-	public int getRowCount(String sheet) {
-		try {
-		int index=workbook.getSheetIndex(sheet);
-		if(index==-1) {
-			return 0;	
-		}
-		else {
-			worksheet=workbook.getSheetAt(index);
+
+	public int getRowCount(String sheetName) {
+			worksheet=workbook.getSheet(sheetName);
 			int number=worksheet.getLastRowNum()+1;
 			return number;	
-		}
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		return 0;
 	}
 	
-	public int getColCount(String sheet) {
-		try {
-		int index=workbook.getSheetIndex(sheet);
-		if(index==-1) {
-			return 0;	
-		}
-		else {
-			worksheet=workbook.getSheetAt(index);
+	public int getColCount(String sheetName) {
+			worksheet=workbook.getSheet(sheetName);
 			row=worksheet.getRow(0);
 			return row.getLastCellNum();	
-		}
-
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		return 0;
-	}
-	
-	public static void main(String[] args) {
-		String path=System.getProperty("user.dir")+"\\src\\test\\resources\\testdata\\Login.xlsx";
-		ExcelReader obj=new ExcelReader(path);
-		System.out.println(obj.getCellData("Login", "username", 3));
-		
 	}
 
 }

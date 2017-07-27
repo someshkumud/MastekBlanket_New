@@ -52,9 +52,9 @@ public class Login {
 	/**
 	 * This Method will Login to Application
 	 */
-	public void loginToApplication() throws InterruptedException{
-		enterUsername("admin");
-		enterPassword("admin");
+	public void loginToApplication(String username, String password) throws InterruptedException{
+		enterUsername(username);
+		enterPassword(password);
 		clickLogin();
 		Thread.sleep(5000);
 	}
